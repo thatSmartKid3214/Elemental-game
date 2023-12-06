@@ -1,0 +1,8 @@
+#Today's tasks
+
+-Player Spawning
+-Player controller
+-Player animations and collision with the world
+-Optimizing rendering
+
+-Make the final room designs from the final game

@@ -14,6 +14,7 @@ class Assets:
         self.images = {}
         self.sound_effects = {}
         self.music = {}
+        self.animations = {"fire":{}, "water":{}, "lightning":{}}
         
         self.rooms = {}
         self.corridors = {}
@@ -28,6 +29,7 @@ class Assets:
         
         self.load_rooms()
         self.load_tileset()
+        self.load_animations()
         
     def load_rooms(self):
         path = "data/rooms"
@@ -67,8 +69,8 @@ class Assets:
                             data["main_entry"] = entry
                     
                 for obj_id in data["objects"]:
-                    data["relativity"][obj_id] = [entry.x - data["objects"][obj_id][0].x, entry.y - data["objects"][obj_id][0].y]   
-                
+                    data["relativity"][obj_id] = [data["main_entry"].x - data["objects"][obj_id][0].x, data["main_entry"].y - data["objects"][obj_id][0].y]   
+                    
                 self.rooms[item] = data
                 
             if "corridor" in item:
@@ -134,7 +136,7 @@ class Assets:
                     
                 for obj_id in data["objects"]:
                     data["relativity"][obj_id] = [entry.x - data["objects"][obj_id][0].x, entry.y - data["objects"][obj_id][0].y]   
-                
+                    
                 self.replacement_data[item] = data
                 
             if "corridor" in item:
@@ -189,6 +191,20 @@ class Assets:
         
         for r in remove_list:
             del self.r_corridors[r]
+        
+    def load_animations(self):
+        anim_list = os.listdir("data/images/animations/player")
+        p_anims = ["idle", "run", "jump", "wall_slide", "dash", "attack"]
+        
+        for a in anim_list:
+            for anim in p_anims:
+                path = "data/images/animations/player" + "/" + a + "/" + anim
+                self.animations[a][anim] = []
+                
+                for i in range(len(os.listdir(path))):
+                    img_path = f"{path}/{anim}{i+1}.png"
+                    self.animations[a][anim].append(E.ImageManager.load(img_path, (0, 0, 0)))
+                
             
     def load_tileset(self):
         tileset = E.ImageManager.load("data/images/tileset.png", (0, 0, 0))

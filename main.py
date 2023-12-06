@@ -6,15 +6,15 @@ from scripts.Engine import JSON_Handler
 
 pygame.init()
 
-W = 600
-H = 350
-DISPLAY_W = 300
-DISPLAY_H = 175
+W = 640
+H = 360
+DISPLAY_W = 320
+DISPLAY_H = 180
 
 
 class Game:
     def __init__(self):
-        self.screen = pygame.display.set_mode((W, H))
+        self.screen = pygame.display.set_mode((W, H), pygame.RESIZABLE)
         self.display = pygame.Surface((DISPLAY_W, DISPLAY_H))
         self.fps = 60
         self.clock = pygame.time.Clock()

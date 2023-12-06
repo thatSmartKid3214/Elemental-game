@@ -12,7 +12,7 @@ class Game_Manager:
         self.assets = self.game.assets
         self.state = "Play"
         self.states = {"Play": self.play_game}
-        self.player = Player(704, 256, 16, 16, 20, 20, 0)
+        self.player = Player(self, 704, 256, 16, 16, 4, 5, 0.2)
         self.camera = E.Camera()
         self.level = {"tiles":[],  "decor":[], "walls":[]}
         self.render_order = ["walls", "decor", "tiles"]
@@ -23,10 +23,16 @@ class Game_Manager:
         self.test_entries1 = []
         self.test_entries2 = []
         
-        self.tiles = []
+        self.debug_render = False
+        
+        self.colliders = {"tiles":[]}
+        
+        self.collidables = []
+        for i in range(60):
+            self.collidables.append(i+1)
         
         self.world = World(self) 
-        count = 25 
+        count = 8
         self.world.generate(count)    
         
         for i in range(self.world.max_retries):
@@ -42,6 +48,11 @@ class Game_Manager:
                 break  
         
         self.level = self.world.level
+        
+        pos = random.choice(self.world.spawn_points)
+        
+        self.player.set_pos(pos[0], pos[1])
+        self.camera.update(self.player.rect, self.game.display, 1)
             
     def manage_events(self):
         for event in pygame.event.get():
@@ -88,27 +99,42 @@ class Game_Manager:
         """
         self.count += 1
         
+        render_range = [0, 0, 0, 0]
+        
+        c = 25
+        render_range[0] = int((self.player.rect.left - self.TILESIZE*c)/self.TILESIZE)
+        render_range[1] = int((self.player.rect.right + self.TILESIZE*c)/self.TILESIZE)
+        render_range[2] = int((self.player.rect.top - self.TILESIZE*c)/self.TILESIZE) 
+        render_range[3] = int((self.player.rect.bottom + self.TILESIZE*c)/self.TILESIZE)
+        
         for layer in self.render_order:
             for tile in self.level[layer]:    
-                if tile[0] in self.assets.tileset:
-                    self.game.display.blit(self.assets.tileset[tile[0]], (tile[1][0]*self.TILESIZE-scroll[0], tile[1][1]*self.TILESIZE-scroll[1]))
-        """
-        for rect in self.test_rects:
-            pygame.draw.rect(self.game.display, (255, 255, 255), (rect.x-scroll[0], rect.y-scroll[1], rect.width, rect.height), 1)
-        for rect in self.test_entries1:
-            pygame.draw.rect(self.game.display, (255, 0, 0), (rect.x-scroll[0], rect.y-scroll[1], rect.width, rect.height), 1)
-        for rect in self.test_entries2:
-            pygame.draw.rect(self.game.display, (255, 0, 255), (rect.x-scroll[0], rect.y-scroll[1], rect.width, rect.height), 1)
-        """
+                if (render_range[0] < tile[1][0] < render_range[1]) and (render_range[2] < tile[1][1] < render_range[3]):
+                    if tile[0] in self.assets.tileset:
+                        self.game.display.blit(self.assets.tileset[tile[0]], (tile[1][0]*self.TILESIZE-scroll[0], tile[1][1]*self.TILESIZE-scroll[1]))
+
+                        if tile[0] in self.collidables:
+                            self.colliders["tiles"].append(pygame.Rect(tile[1][0]*self.TILESIZE, tile[1][1]*self.TILESIZE, self.TILESIZE, self.TILESIZE))
+        
+        
+        if self.debug_render:
+            for rect in self.colliders["tiles"]:
+                pygame.draw.rect(self.game.display, (0, 255, 0), (rect.x-scroll[0], rect.y-scroll[1], rect.width, rect.height), 1)
+            for rect in self.test_rects:
+                pygame.draw.rect(self.game.display, (255, 255, 255), (rect.x-scroll[0], rect.y-scroll[1], rect.width, rect.height), 1)
+            for rect in self.test_entries1:
+                pygame.draw.rect(self.game.display, (255, 0, 0), (rect.x-scroll[0], rect.y-scroll[1], rect.width, rect.height), 1)
+            for rect in self.test_entries2:
+                pygame.draw.rect(self.game.display, (255, 0, 255), (rect.x-scroll[0], rect.y-scroll[1], rect.width, rect.height), 1)
         
         self.player.draw(self.game.display, scroll)
         self.manage_events()
         
-        self.player.move(self.tiles)
+        self.player.move(self.colliders["tiles"])
         self.player.update()
         
-        self.tiles = []
-            
+        self.colliders["tiles"] = []
+
         self.game.screen.blit( pygame.transform.scale(self.game.display, (self.game.screen.get_width() , self.game.screen.get_height())), (0, 0) )
         pygame.display.update()
      

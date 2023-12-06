@@ -13,6 +13,8 @@ class Room:
         self.main_entry = room["main_entry"]
         self.range = room["range"]
         self.data = room["data"]
+        self.spawn = list(room["objects"]["Spawn"][0].topleft)
+        self.trigger = None
         self.entries = {}
         self.valid = True
         
@@ -30,6 +32,8 @@ class Room:
         
         self.Room.x = self.main_entry[0].x - self.relativity["Room"][0]
         self.Room.y = self.main_entry[0].y - self.relativity["Room"][1]
+        
+        self.spawn = [self.main_entry[0].x - self.relativity["Spawn"][0], self.main_entry[0].y - self.relativity["Spawn"][1]]
     
     def closed_off(self):
         e_count = 0
@@ -61,7 +65,7 @@ class Room:
             if "Left" != self.main_entry[1]:
                 self.main_entry[0].x = self.entries["Left"][0].x + self.relativity["Left"][0]
                 self.main_entry[0].y = self.entries["Left"][0].y + self.relativity["Left"][1]
-            
+        
             self.update()
             return True
         elif entry == "Top" and ("Bottom" in self.entries):
@@ -194,6 +198,8 @@ class World:
         self.retry = False
         self.max_retries = 20
         self.retries = 0
+        
+        self.spawn_points = []
     
     def check_corridor_entry(self, corridor):
         direction = {"Left": [-10, 0], "Right": [10, 0], "Top": [0, -10], "Bottom": [0, 10]}
@@ -220,13 +226,10 @@ class World:
         
         replaced = False
         while not replaced:
-            #print("replacing", replace_info)
             c_id = random.choice(self.gm.assets.r_corridors[corridor.id.split(".")[0]])
             if c_id in self.gm.assets.rc_data:
                 c = Corridor(c_id, deepcopy(self.gm.assets.rc_data[c_id]))
                 if list(c.entries) == valid_entries:
-                    #print(r.entries)
-                    print("Yeahhhhhhh!!!!c")
                     c.Corridor = corridor.Corridor
                     for e in valid_entries:
                         c.entries[e] = corridor.entries[e]
@@ -234,12 +237,6 @@ class World:
             else:
                 print("break")
                 break
-            
-    def place_corridor_tiles(self, c):
-        pass
-    
-    def place_room_tiles(self, room):
-        pass
             
     def check_room_entries(self, room):
         direction = {"Left": [-10, 0], "Right": [10, 0], "Top": [0, -10], "Bottom": [0, 10]}
@@ -434,6 +431,8 @@ class World:
                             #print(r.entries)
                             #print("Yeahhhhhhh!!!!")
                             r.Room = room.Room
+                            r.spawn = room.spawn
+                            r.trigger = room.trigger
                             for e in replace_info[1]:
                                 r.entries[e] = room.entries[e]
                             room = r
@@ -456,6 +455,9 @@ class World:
                             tile = [room.data[layer][tile_id][0], new_pos]
 
                             self.level[layer].append(tile)
+            
+            self.spawn_points.append(room.spawn)
+            self.gm.test_rects.append(pygame.Rect(room.spawn[0], room.spawn[1], 16, 16))
             
             self.gm.test_rects.append(room.Room)
             for e in room.entries:

@@ -2,8 +2,9 @@ import pygame
 import scripts.Engine as E
 
 class Player(E.Entity):
-    def __init__(self, x, y, width, height, vel, jump_height, gravity, anim_obj=None):
+    def __init__(self, gm, x, y, width, height, vel, jump_height, gravity, anim_obj=None):
         super().__init__(x, y, width, height, vel, jump_height, gravity, anim_obj)
+        self.gm = gm
         self.flip = False
         self.max_vel_y = 6
         self.jump_count = 0
@@ -19,7 +20,6 @@ class Player(E.Entity):
         self.dash_direction = 1
         self.dash_timer = E.Timer(0.1, self.stop_dashing)
         self.dash_cooldown = E.Timer(1, self.refresh_dash)
-        
     
     def stop_dashing(self):
         self.dashing = False

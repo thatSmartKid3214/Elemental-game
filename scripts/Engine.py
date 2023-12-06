@@ -203,10 +203,12 @@ class ImageManager:
     @staticmethod
     def load_folder(folder_path):
         folder_list = os.listdir(folder_path)
+        folder_list.sort()
         img_list = []
-        for file in folder_path:
+        for file in folder_list:
             if file.split('.')[1] in VALID_IMAGE_FORMATS:
-                img_list.append(pygame.image.load(f"{folder_path}.{file}").convert())
+                print(f"{folder_path}/{file}")
+                img_list.append(ImageManager.load(f"{folder_path}/{file}", (0, 0, 0)).convert())
 
         return img_list
 
@@ -483,20 +485,15 @@ class Animation:
         self.loop = True
         self.states = []
 
-    def load_anim(self, anim_name, folder, ext, frame_duration, scale=1, colorkey=None):
-        img_id = folder.split('/')[-1]
+    def load_anim(self, frames, anim_name, frame_duration):
         self.anim_database[anim_name] = {}
         self.frames[anim_name] = []
         self.states.append(anim_name)
         for i in range(len(frame_duration)):
-            path = f"{folder}/{img_id}{i+1}.{ext}"
-            if colorkey != None:
-                img = ImageManager.load(path, colorkey)
-                self.anim_database[anim_name][path.split('/')[-1].split('.')[0]] = img
-            for i in range(frame_duration[i]):
-                img = ImageManager.load(path)
-                self.frames[anim_name].append(path.split('/')[-1].split('.')[0])
-
+            img = frames[i]
+            self.anim_database[anim_name][anim_name + str(i + 1)] = img
+            self.frames[anim_name] = self.frames[anim_name] + [anim_name + str(i + 1)] * frame_duration[i]
+            
         frame = self.frames[self.states[0]][0]
         self.image = self.anim_database[self.states[0]][frame]
 

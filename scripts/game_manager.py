@@ -12,7 +12,7 @@ class Game_Manager:
         self.assets = self.game.assets
         self.state = "Play"
         self.states = {"Play": self.play_game}
-        self.player = Player(self, 704, 256, 16, 16, 4, 5, 0.2)
+        self.player = Player(self, 704, 256, 16, 32, 4, 4.8, 0.2)
         self.camera = E.Camera()
         self.level = {"tiles":[],  "decor":[], "walls":[]}
         self.render_order = ["walls", "decor", "tiles"]
@@ -59,23 +59,28 @@ class Game_Manager:
             if event.type == pygame.QUIT:
                 self.game.close()
                 
-            if event.type == pygame.KEYDOWN:                    
+            if event.type == pygame.KEYDOWN: 
+                
+                if event.key == pygame.K_1:
+                    self.player.mode = "fire"
+                    self.player.animation = self.player.animations[self.player.mode]
+                if event.key == pygame.K_2:
+                    self.player.mode = "water"
+                    self.player.animation = self.player.animations[self.player.mode]
+                if event.key == pygame.K_3:
+                    self.player.mode = "lightning"
+                    self.player.animation = self.player.animations[self.player.mode]
+                                   
                 if event.key == pygame.K_a:
                     self.player.left = True
                 if event.key == pygame.K_d:
                     self.player.right = True
-                if event.key == pygame.K_w:
-                    self.player.up = True
-                if event.key == pygame.K_s:
-                    self.player.down = True
                 if event.key == pygame.K_SPACE:
                     self.player.jump()
                 if event.key == pygame.K_LSHIFT:
+                    self.player.animation.frame_count = 0
+                    self.player.animation.set_loop(False)
                     self.player.dash()
-                if event.key == pygame.K_1:
-                    self.player.velocity[0] = 3
-                if event.key == pygame.K_2:
-                    self.player.velocity[0] = -6
                 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:

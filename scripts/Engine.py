@@ -500,13 +500,26 @@ class Animation:
     def set_loop(self, flag: bool):
         self.loop = flag
         
-    def animate(self,state,return_img=False,return_frame=False):
+    def animate(self,state,return_img=False,return_frame=False, set_frame="", loop_between=None):
         if state in self.states:
             self.frame_count += 1
             if self.loop == True:
                 if self.frame_count >= len(self.frames[state]):
                     self.frame_count = 0
+            if self.loop == False:
+                if self.frame_count >= len(self.frames[state]):
+                    self.frame_count = len(self.frames[state])-1
             frame_name = self.frames[state][self.frame_count]
+            
+            if set_frame != "":
+                frame_name = set_frame
+                
+            if loop_between != None:
+                if self.frame_count < loop_between[0]:
+                    self.frame_count = loop_between[0]
+                if self.frame_count > loop_between[1]-1:
+                    self.frame_count = loop_between[0]
+                
             self.image = self.anim_database[state][frame_name]
             if return_img != False and return_frame != True:
                 return self.image

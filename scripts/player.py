@@ -65,12 +65,15 @@ class Player(E.Entity):
         mod_x = 24
         mod_y = 16
         
-        if self.movement[0] != 0 and self.grounded and self.fall_anim == False:
-            self.state = "run"
         if self.movement[0] == 0 and self.grounded and self.fall_anim == False:
             self.state = "idle"
         if self.dashing:
             self.state = "dash"
+        elif not self.dashing and self.grounded: 
+            if self.movement[0] == 0:
+                self.state = "idle"
+            if self.movement[0] != 0:
+                self.state = "run"
         
         if self.state == "wall_slide" and self.grounded:
             if self.movement[0] == 0:
@@ -89,8 +92,13 @@ class Player(E.Entity):
             self.state = "jump"
             self.animation.frame_count = 5
         
-        if self.state in ["idle", "run", "wall_slide", "dashing"] and self.grounded == False and self.on_wall == False:
+        if self.state in ["idle", "run", "wall_slide"] and self.grounded == False and self.on_wall == False:
             if self.velocity[1] >= 6:
+                self.animation.frame_count = 13
+                self.state = "jump"
+        
+        if self.state == "dash" and self.grounded == False and self.on_wall == False:
+            if self.velocity[1] >= 1:
                 self.animation.frame_count = 13
                 self.state = "jump"
             
@@ -149,10 +157,14 @@ class Player(E.Entity):
             self.movement[0] = -self.vel
             self.flip = True
             self.dash_direction = -1
+            if self.grounded and self.fall_anim == False:
+                self.state = "run"
         if self.right:
             self.movement[0] = self.vel
             self.flip = False
             self.dash_direction = 1
+            if self.grounded and self.fall_anim == False:
+                self.state = "run"
         self.velocity[1] += self.gravity
         if self.up:
             self.movement[1] = -self.vel
@@ -184,6 +196,12 @@ class Player(E.Entity):
                 self.velocity[1] = 0.6
         
         #Dashing
+        if self.grounded:
+            if self.flip:
+                self.dash_direction = -1
+            if not self.flip:
+                self.dash_direction = 1
+        
         if self.dashing:
             movement[0] = self.dash_speed * self.dash_direction
             self.velocity[1] = 0

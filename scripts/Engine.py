@@ -280,7 +280,7 @@ class Physics:
         self.w = w
         self.h = h
 
-    def movement(self,movement,tiles):
+    def movement(self,movement,tiles, l_ramps=None, r_ramps=None):
         #x-axis(tiles)
         self.x += movement[0]
         self.rect.x = int(self.x)
@@ -307,6 +307,42 @@ class Physics:
                 self.rect.top = tile.bottom
                 collision_types["top"] = True
             self.y = self.rect.y
+        
+        if l_ramps != None:
+            for hitbox in l_ramps:
+                if self.rect.colliderect(hitbox):
+                    rel_x = self.rect.x - hitbox.x
+                    
+                    height_pos = hitbox.height - rel_x
+                    
+                    height_pos = min(height_pos, hitbox.height)
+                    height_pos = max(height_pos, 0)
+                    
+                    true_y_pos = hitbox.bottom - height_pos
+                    
+                    if self.rect.bottom > true_y_pos:
+                        self.rect.bottom = true_y_pos
+                        self.y = self.rect.y
+                        
+                        collision_types["bottom"] = True
+              
+        if r_ramps != None:      
+            for hitbox in r_ramps:
+                if self.rect.colliderect(hitbox):
+                    rel_x = self.rect.x - hitbox.x
+                    
+                    height_pos = rel_x + self.rect.width
+                    
+                    height_pos = min(height_pos, hitbox.height)
+                    height_pos = max(height_pos, 0)
+                    
+                    true_y_pos = hitbox.bottom - height_pos
+                    
+                    if self.rect.bottom > true_y_pos:
+                        self.rect.bottom = true_y_pos
+                        self.y = self.rect.y
+                        
+                        collision_types["bottom"] = True
 
         return collision_types
 

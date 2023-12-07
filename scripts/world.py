@@ -2,6 +2,7 @@
 import pygame
 import random
 from copy import deepcopy
+from scripts.spike import Spike
 
 
 class Room:
@@ -17,8 +18,13 @@ class Room:
         self.trigger = None
         self.entries = {}
         self.valid = True
+        self.spikes = {}
         
         for obj_id in room["objects"]:
+            
+            if "Spike" in obj_id:
+                self.spikes[obj_id] = room["objects"][obj_id][0]
+            
             if obj_id in ["Left", "Right", "Top", "Bottom"]:
                 if room["objects"][obj_id][0] == self.main_entry:
                     self.main_entry = [room["objects"][obj_id][0], obj_id]
@@ -34,6 +40,9 @@ class Room:
         self.Room.y = self.main_entry[0].y - self.relativity["Room"][1]
         
         self.spawn = [self.main_entry[0].x - self.relativity["Spawn"][0], self.main_entry[0].y - self.relativity["Spawn"][1]]
+        
+        for s in self.spikes:
+            self.spikes[s].topleft = [self.main_entry[0].x - self.relativity[s][0], self.main_entry[0].y - self.relativity[s][1]]
     
     def closed_off(self):
         e_count = 0
@@ -105,9 +114,13 @@ class Corridor:
         self.main_entry = corridor["main_entry"]
         self.data = corridor["data"]
         self.entries = {}
+        self.spikes = {}
         self.valid = True
         
         for obj_id in corridor["objects"]:
+            if "Spike" in obj_id:
+                self.spikes[obj_id] = corridor["objects"][obj_id][0]
+            
             if obj_id in ["Left", "Right", "Top", "Bottom"]:
                 if corridor["objects"][obj_id][0] == self.main_entry:
                     self.main_entry = [corridor["objects"][obj_id][0], obj_id]
@@ -121,6 +134,9 @@ class Corridor:
         
         self.Corridor.x = self.main_entry[0].x - self.relativity["Corridor"][0]
         self.Corridor.y = self.main_entry[0].y - self.relativity["Corridor"][1]
+        
+        for s in self.spikes:
+            self.spikes[s].topleft = [self.main_entry[0].x - self.relativity[s][0], self.main_entry[0].y - self.relativity[s][1]]
     
     def closed_off(self):
         e_count = 0
@@ -407,9 +423,27 @@ class World:
                     for layer in c.data:
                         if tile_id in c.data[layer]:
                             tile = [c.data[layer][tile_id][0], new_pos]
+                            
+                            if tile[0] in [81, 82, 83, 84]:
+                                img = self.gm.assets.tileset[tile[0]]
+                                s = Spike(img, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE], tile[0])
+                                self.gm.spikes.append(s)
+                                continue
 
                             self.level[layer].append(tile)
-                            
+            
+            for s in c.spikes:
+                spike = c.spikes[s]
+                t = 81
+                if s == "Spike D": 
+                    t = 82  
+                if s == "Spike L": 
+                    t = 83  
+                if s == "Spike R": 
+                    t = 84 
+                img = self.gm.assets.tileset[t]
+                s = Spike(img, [spike.x, spike.y], t, "hidden")
+                self.gm.spikes.append(s) 
                       
             self.gm.test_rects.append(c.Corridor)
             for e in c.entries:
@@ -453,8 +487,28 @@ class World:
                     for layer in room.data:
                         if tile_id in room.data[layer]:
                             tile = [room.data[layer][tile_id][0], new_pos]
+                            
+                            if tile[0] in [81, 82, 83, 84]:
+                                img = self.gm.assets.tileset[tile[0]]
+                                s = Spike(img, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE], tile[0])
+                                self.gm.spikes.append(s)
+                                continue
 
                             self.level[layer].append(tile)
+            
+            
+            for s in room.spikes:
+                spike = room.spikes[s]
+                t = 81
+                if s == "Spike D": 
+                    t = 82  
+                if s == "Spike L": 
+                    t = 83  
+                if s == "Spike R": 
+                    t = 84 
+                img = self.gm.assets.tileset[t]
+                s = Spike(img, [spike.x, spike.y], t, "hidden")
+                self.gm.spikes.append(s) 
             
             self.spawn_points.append(room.spawn)
             self.gm.test_rects.append(pygame.Rect(room.spawn[0], room.spawn[1], 16, 16))

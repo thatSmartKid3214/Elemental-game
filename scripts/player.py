@@ -1,5 +1,6 @@
 import pygame
 import scripts.Engine as E
+import math
 
 class Player(E.Entity):
     def __init__(self, gm, x, y, width, height, vel, jump_height, gravity, anim_obj=None):
@@ -20,6 +21,7 @@ class Player(E.Entity):
         self.dash_direction = 1
         self.dash_timer = E.Timer(0.15, self.stop_dashing)
         self.dash_cooldown = E.Timer(0.4, self.refresh_dash)
+        self.on_platform = False
         
         self.mode = "fire"
         
@@ -28,6 +30,8 @@ class Player(E.Entity):
         jump_f_count = [5, 3, 3, 3, 3, 5, 5, 5, 3, 3, 3]
         dash_f_count = 4
         attack_f_count = 11
+        
+        self.air_time = 0
         
         f_anim = E.Animation()
         f_anim.load_anim(self.gm.assets.animations["fire"]["idle"], "idle", [idle_f_count] * 4)
@@ -69,7 +73,7 @@ class Player(E.Entity):
             self.state = "idle"
         if self.dashing:
             self.state = "dash"
-        elif not self.dashing and self.grounded: 
+        elif not self.dashing and self.grounded and self.fall_anim == False: 
             if self.movement[0] == 0:
                 self.state = "idle"
             if self.movement[0] != 0:
@@ -124,7 +128,8 @@ class Player(E.Entity):
         
         surf.blit(pygame.transform.flip(self.image, self.flip, False), (self.rect.x-mod_x-scroll[0],self.rect.y-mod_y-scroll[1]))
         
-        #pygame.draw.rect(surf, (255, 255, 255), (self.rect.x-scroll[0],self.rect.y-scroll[1], self.rect.width, self.rect.height), 1)
+        if self.gm.debug_render:
+            pygame.draw.rect(surf, (255, 255, 255), (self.rect.x-scroll[0],self.rect.y-scroll[1], self.rect.width, self.rect.height), 1)
     
     
     def stop_dashing(self):
@@ -145,12 +150,13 @@ class Player(E.Entity):
         if self.on_wall:
             self.velocity[0] = 4.8 * self.jump_direction
             self.velocity[1] = -3.2
+            self.wall_jumping = True
         elif self.jump_count < self.max_jumps and self.on_wall == False:
             self.jump_count += 1
             self.velocity[1] = -self.jump_height
             self.grounded = False
         
-    def move(self, tiles):
+    def move(self, colliders):
         self.movement = [0, 0]
         grav_modifier = 1
         if self.left:
@@ -206,17 +212,24 @@ class Player(E.Entity):
             movement[0] = self.dash_speed * self.dash_direction
             self.velocity[1] = 0
         
-        self.collisions = self.physics_obj.movement(movement, tiles)
+        platform_list = E.collision_test(pygame.Rect(self.rect.x, self.rect.y+1, self.rect.width, self.rect.height), colliders["platforms"])
+        if len(platform_list) > 0:
+            self.on_platform = True
+        else:
+            self.on_platform = False
+        
+        self.collisions = self.physics_obj.movement(movement, colliders["tiles"], colliders["l_ramps"], colliders["r_ramps"])
         self.rect.center = self.physics_obj.rect.center
 
         self.on_wall = False
         
         if self.collisions["bottom"]:
-            self.velocity[1] = 1
+            self.velocity[1] = 0.8
             self.jump_count = 0
             if self.fall_anim and self.state == "jump":
                 if self.animation.frame_count < 32:
                     self.animation.frame_count = 32
+                    #self.fall_anim = False
             self.grounded = True
         else:
             self.grounded = False

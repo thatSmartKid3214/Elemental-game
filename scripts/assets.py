@@ -204,7 +204,20 @@ class Assets:
                 for i in range(len(os.listdir(path))):
                     img_path = f"{path}/{anim}{i+1}.png"
                     self.animations[a][anim].append(E.ImageManager.load(img_path, (0, 0, 0)))
-                
+        
+        self.animations["fountain"] = []
+        self.animations["torch"] = []
+        for i in range(8):
+            path = "data/images/animated_tiles/fountain/fountain" + str(i+1) + ".png"
+            self.animations["fountain"].append(E.ImageManager.load(path, (0, 0, 0))) 
+        for i in range(8):
+            path = "data/images/animated_tiles/torch/torch" + str(i+1) + ".png"
+            self.animations["torch"].append(E.ImageManager.load(path, (0, 0, 0))) 
+        
+        images, ids = E.ImageManager.load_folder("data/images", return_ids=True)
+        
+        for i in range(len(ids)):
+            self.images[ids[i].split(".")[0]] = images[i]
             
     def load_tileset(self):
         tileset = E.ImageManager.load("data/images/tileset.png", (0, 0, 0))
@@ -235,18 +248,6 @@ class Assets:
             tile = load_data["tiles"][tile_id]
             img = E.ImageManager.get_image(tileset, tile[0], tile[1], tile[2], tile[3], 1)
             self.tileset[tile_id] = img 
-
-    def load_images(self):
-        image_path = self.cwd + "data/images"  
-        
-        image_list = os.listdir(image_path)
-        for img in image_list:
-            if img != "sketch.png":
-                image = E.ImageManager.load(f"{image_path}/{img}", (255, 255, 255))
-                self.images[img.split(".")[0]] = image
-
-    def get_image(self, img_id):
-        return self.images[img_id]
 
     def modify_image(self, img_id, scale=0, colorkey=(0, 0, 0)):
         if scale != 0:

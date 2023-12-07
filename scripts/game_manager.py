@@ -17,7 +17,6 @@ class Game_Manager:
         self.level = {"tiles":[],  "decor":[], "walls":[]}
         self.render_order = ["walls", "decor", "traps", "tiles"]
         self.TILESIZE = 16
-        self.count = 0
         
         self.test_rects = []
         self.test_entries1 = []
@@ -35,9 +34,11 @@ class Game_Manager:
         self.ramps = [91, 92]
         self.platforms = [87, 88, 89]
         self.spikes = []
+        self.trapdoors = []
+        self.animated_tiles = []
         
         self.world = World(self) 
-        count = 15
+        count = 4
         self.world.generate(count)    
         
         for i in range(self.world.max_retries):
@@ -105,12 +106,6 @@ class Game_Manager:
         self.camera.update(self.player.rect, self.game.display, 5)
         scroll = self.camera.scroll
         
-        """
-        if self.count%(self.game.fps) == 0:
-            self.world.generate(30)
-        """
-        self.count += 1
-        
         render_range = [0, 0, 0, 0]
         
         c = 25
@@ -120,6 +115,14 @@ class Game_Manager:
         render_range[3] = int((self.player.rect.bottom + self.TILESIZE*c)/self.TILESIZE)
         
         for layer in self.render_order:
+            
+            if layer == "decor":
+                for animated_tile in self.animated_tiles:
+                    if (render_range[0] < animated_tile[2][0] < render_range[1]) and (render_range[2] < animated_tile[2][1] < render_range[3]):
+                        img = animated_tile[0].animate(animated_tile[1], True)
+                        
+                        self.game.display.blit(img, (animated_tile[2][0]*self.TILESIZE-scroll[0], animated_tile[2][1]*self.TILESIZE-scroll[1]))
+            
             if layer == "traps":
                 for spike in self.spikes:
                     if (render_range[0] < spike.rect.x/self.TILESIZE < render_range[1]) and (render_range[2] < spike.rect.y/self.TILESIZE < render_range[3]):
@@ -143,6 +146,18 @@ class Game_Manager:
                             pass
                         
                         spike.draw(self.game.display, scroll)
+                
+                for trapdoor in self.trapdoors:
+                    trapdoor.update()
+                    
+                    if self.player.rect.bottom <= trapdoor.rect.y and not trapdoor.opened:
+                        self.colliders["tiles"].append(trapdoor.rect)
+                    
+                        if pygame.Rect(self.player.rect.x, self.player.rect.y+2, self.player.rect.width, self.player.rect.height).colliderect(trapdoor.rect) \
+                            and trapdoor.open_timer.timed_out() and self.player.collisions["bottom"]:
+                                trapdoor.open_timer.set()
+                    
+                    trapdoor.draw(self.game.display, scroll)
                         
             if layer in self.level:
                 for tile in self.level[layer]:    

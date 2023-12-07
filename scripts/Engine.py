@@ -201,16 +201,20 @@ class ImageManager:
         return pygame.transform.scale(surf, (w*scale, h*scale))
 
     @staticmethod
-    def load_folder(folder_path):
+    def load_folder(folder_path, return_ids=False):
         folder_list = os.listdir(folder_path)
         folder_list.sort()
         img_list = []
+        img_ids = []
         for file in folder_list:
-            if file.split('.')[1] in VALID_IMAGE_FORMATS:
-                print(f"{folder_path}/{file}")
+            if file.split('.')[-1] in VALID_IMAGE_FORMATS:
+                img_ids.append(file)
                 img_list.append(ImageManager.load(f"{folder_path}/{file}", (0, 0, 0)).convert())
 
-        return img_list
+        if not return_ids:
+            return img_list
+        else:
+            return [img_list, img_ids]
 
 
 class Timer:

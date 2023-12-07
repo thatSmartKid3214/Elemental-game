@@ -3,6 +3,8 @@ import pygame
 import random
 from copy import deepcopy
 from scripts.spike import Spike
+from scripts.trap_door import Trapdoor
+from scripts.Engine import Animation
 
 
 class Room:
@@ -429,6 +431,24 @@ class World:
                                 s = Spike(img, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE], tile[0])
                                 self.gm.spikes.append(s)
                                 continue
+                                
+                            if tile[0] in [85, 86]:
+                                images = [self.gm.assets.tileset[85], self.gm.assets.tileset[86]]
+                                t = Trapdoor(images, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE + 2])
+                                self.gm.trapdoors.append(t)
+                                continue
+                                
+                            if tile[0] == "torch":
+                                anim = Animation()
+                                anim.load_anim(self.gm.assets.animations["torch"], "torch", [5]*8)
+                                self.gm.animated_tiles.append([anim, "torch", new_pos])
+                                continue
+                            
+                            if tile[0] == "fountain":
+                                anim = Animation()
+                                anim.load_anim(self.gm.assets.animations["fountain"], "fountain", [5]*8)
+                                self.gm.animated_tiles.append([anim, "fountain", new_pos])
+                                continue
 
                             self.level[layer].append(tile)
             
@@ -492,6 +512,24 @@ class World:
                                 img = self.gm.assets.tileset[tile[0]]
                                 s = Spike(img, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE], tile[0])
                                 self.gm.spikes.append(s)
+                                continue
+                        
+                            if tile[0] in [85, 86]:
+                                images = [self.gm.assets.tileset[85], self.gm.assets.tileset[86]]
+                                t = Trapdoor(images, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE + 2])
+                                self.gm.trapdoors.append(t)
+                                continue
+                                
+                            if tile[0] == "torch":
+                                anim = Animation()
+                                anim.load_anim(self.gm.assets.animations["torch"], "torch", [5]*8)
+                                self.gm.animated_tiles.append([anim, "torch", new_pos])
+                                continue
+                            
+                            if tile[0] == "fountain":
+                                anim = Animation()
+                                anim.load_anim(self.gm.assets.animations["fountain"], "fountain", [5]*8)
+                                self.gm.animated_tiles.append([anim, "fountain", new_pos])
                                 continue
 
                             self.level[layer].append(tile)

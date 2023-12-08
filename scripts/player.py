@@ -118,7 +118,7 @@ class Player(E.Entity):
                 self.state = "jump"
         
         if self.state == "dash" and self.grounded == False and self.on_wall == False:
-            if self.air_time >= 8:
+            if self.air_time >= 25 and self.dashing == False:
                 self.animation.frame_count = 13
                 self.state = "jump"
         
@@ -134,6 +134,10 @@ class Player(E.Entity):
                 self.state = "idle"
             if self.movement[0] != 0:
                 self.state = "run"
+        
+        if self.wall_jumping and self.dashing:
+            self.state = "dash"
+            self.jump_frame = ""
             
         loop = None
         if self.fall_anim and not self.grounded:

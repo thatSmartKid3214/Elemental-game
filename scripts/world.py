@@ -5,6 +5,7 @@ from copy import deepcopy
 from scripts.spike import Spike
 from scripts.trap_door import Trapdoor
 from scripts.Engine import Animation
+from scripts.door import Door
 
 
 class Room:
@@ -218,6 +219,10 @@ class World:
         self.retries = 0
         
         self.spawn_points = []
+        self.already_filled = []
+        
+        world_borders = [99999, -99999, 99999, -99999]
+        
     
     def check_corridor_entry(self, corridor):
         direction = {"Left": [-10, 0], "Right": [10, 0], "Top": [0, -10], "Bottom": [0, 10]}
@@ -433,21 +438,33 @@ class World:
                                 continue
                                 
                             if tile[0] in [85, 86]:
-                                images = [self.gm.assets.tileset[85], self.gm.assets.tileset[86]]
+                                images = [self.gm.assets.tileset[85].copy(), self.gm.assets.tileset[86].copy()]
                                 t = Trapdoor(images, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE + 2])
                                 self.gm.trapdoors.append(t)
                                 continue
                                 
                             if tile[0] == "torch":
                                 anim = Animation()
-                                anim.load_anim(self.gm.assets.animations["torch"], "torch", [5]*8)
+                                anim.load_anim(self.gm.assets.animations["torch"].copy(), "torch", [5]*8)
                                 self.gm.animated_tiles.append([anim, "torch", new_pos])
                                 continue
                             
                             if tile[0] == "fountain":
                                 anim = Animation()
-                                anim.load_anim(self.gm.assets.animations["fountain"], "fountain", [5]*8)
+                                anim.load_anim(self.gm.assets.animations["fountain"].copy(), "fountain", [5]*8)
                                 self.gm.animated_tiles.append([anim, "fountain", new_pos])
+                                continue
+                                
+                            if tile[0] == "wooden door":
+                                images = [self.gm.assets.tileset["wooden door"].copy(), self.gm.assets.images["door_open"].copy()]
+                                d = Door(images, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE], "wood")
+                                self.gm.doors.append(d)
+                                continue
+                                
+                            if tile[0] == "gold door":
+                                images = [self.gm.assets.tileset["gold door"].copy(), self.gm.assets.images["gold_door_open"].copy(), self.gm.assets.images["lock"]]
+                                d = Door(images, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE], "gold")
+                                self.gm.doors.append(d)
                                 continue
 
                             self.level[layer].append(tile)
@@ -461,7 +478,7 @@ class World:
                     t = 83  
                 if s == "Spike R": 
                     t = 84 
-                img = self.gm.assets.tileset[t]
+                img = self.gm.assets.tileset[t].copy()
                 s = Spike(img, [spike.x, spike.y], t, "hidden")
                 self.gm.spikes.append(s) 
                       
@@ -515,21 +532,33 @@ class World:
                                 continue
                         
                             if tile[0] in [85, 86]:
-                                images = [self.gm.assets.tileset[85], self.gm.assets.tileset[86]]
+                                images = [self.gm.assets.tileset[85].copy(), self.gm.assets.tileset[86].copy()]
                                 t = Trapdoor(images, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE + 2])
                                 self.gm.trapdoors.append(t)
                                 continue
                                 
                             if tile[0] == "torch":
                                 anim = Animation()
-                                anim.load_anim(self.gm.assets.animations["torch"], "torch", [5]*8)
+                                anim.load_anim(self.gm.assets.animations["torch"].copy(), "torch", [5]*8)
                                 self.gm.animated_tiles.append([anim, "torch", new_pos])
                                 continue
                             
                             if tile[0] == "fountain":
                                 anim = Animation()
-                                anim.load_anim(self.gm.assets.animations["fountain"], "fountain", [5]*8)
+                                anim.load_anim(self.gm.assets.animations["fountain"].copy(), "fountain", [5]*8)
                                 self.gm.animated_tiles.append([anim, "fountain", new_pos])
+                                continue
+                                
+                            if tile[0] == "wooden door":
+                                images = [self.gm.assets.tileset["wooden door"].copy(), self.gm.assets.images["door_open"].copy()]
+                                d = Door(images, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE], "wood")
+                                self.gm.doors.append(d)
+                                continue
+                                
+                            if tile[0] == "gold door":
+                                images = [self.gm.assets.tileset["gold door"].copy(), self.gm.assets.images["gold_door_open"].copy(), self.gm.assets.images["lock"].copy()]
+                                d = Door(images, [new_pos[0]*self.gm.TILESIZE, new_pos[1]*self.gm.TILESIZE], "gold")
+                                self.gm.doors.append(d)
                                 continue
 
                             self.level[layer].append(tile)
@@ -544,7 +573,7 @@ class World:
                     t = 83  
                 if s == "Spike R": 
                     t = 84 
-                img = self.gm.assets.tileset[t]
+                img = self.gm.assets.tileset[t].copy()
                 s = Spike(img, [spike.x, spike.y], t, "hidden")
                 self.gm.spikes.append(s) 
             

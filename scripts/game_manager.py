@@ -36,9 +36,10 @@ class Game_Manager:
         self.spikes = []
         self.trapdoors = []
         self.animated_tiles = []
+        self.doors = []
         
         self.world = World(self) 
-        count = 4
+        count = 15
         self.world.generate(count)    
         
         for i in range(self.world.max_retries):
@@ -79,6 +80,12 @@ class Game_Manager:
                 if event.key == pygame.K_3:
                     self.player.mode = "lightning"
                     self.player.animation = self.player.animations[self.player.mode]
+                
+                if event.key == pygame.K_e:
+                    if self.current_door != None:
+                        if not self.current_door.locked:
+                            self.current_door.closed = not self.current_door.closed
+                            self.current_door.flip = self.player.flip
                                    
                 if event.key == pygame.K_a:
                     self.player.left = True
@@ -117,12 +124,29 @@ class Game_Manager:
         for layer in self.render_order:
             
             if layer == "decor":
+                
                 for animated_tile in self.animated_tiles:
                     if (render_range[0] < animated_tile[2][0] < render_range[1]) and (render_range[2] < animated_tile[2][1] < render_range[3]):
                         img = animated_tile[0].animate(animated_tile[1], True)
                         
                         self.game.display.blit(img, (animated_tile[2][0]*self.TILESIZE-scroll[0], animated_tile[2][1]*self.TILESIZE-scroll[1]))
-            
+
+                for d in self.doors:
+                    if (render_range[0] < d.rect.x/self.TILESIZE < render_range[1]) and (render_range[2] < d.rect.y/self.TILESIZE < render_range[3]):
+                        d.draw(self.game.display, scroll)
+                        
+                        if d.closed:
+                            self.colliders["tiles"].append(d.rect)
+                        
+                        x = 0
+                        if self.player.flip:
+                            x = -16-(0.4*16)
+                        else:
+                            x = 16
+                        
+                        if pygame.Rect(self.player.rect.x+x, self.player.rect.y, self.player.rect.width*1.7, self.player.rect.height).colliderect(d.rect) and not self.player.rect.colliderect(d.rect):
+                            self.current_door = d
+                        
             if layer == "traps":
                 for spike in self.spikes:
                     if (render_range[0] < spike.rect.x/self.TILESIZE < render_range[1]) and (render_range[2] < spike.rect.y/self.TILESIZE < render_range[3]):
@@ -203,6 +227,7 @@ class Game_Manager:
         
         for c_id in self.colliders:
             self.colliders[c_id] = []
+        self.current_door = None
 
         self.game.screen.blit( pygame.transform.scale(self.game.display, (self.game.screen.get_width() , self.game.screen.get_height())), (0, 0) )
         pygame.display.update()

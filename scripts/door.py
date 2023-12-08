@@ -44,9 +44,10 @@ class Door:
                 x = 10
             if self.flip and not self.closed:
                 x = 12
-                
-            surf.blit(self.images[2], (self.rect.x-13-scroll[0], self.rect.centery-8-scroll[1]))
-            surf.blit(self.images[2], (self.rect.right-3-scroll[0], self.rect.centery-8-scroll[1]))
+            
+            if self.locked:
+                surf.blit(self.images[2], (self.rect.x-13-scroll[0], self.rect.centery-8-scroll[1]))
+                surf.blit(self.images[2], (self.rect.right-3-scroll[0], self.rect.centery-8-scroll[1]))
             
         surf.blit(pygame.transform.flip(self.img, self.flip, False), (self.rect.x-x-scroll[0], self.rect.y-scroll[1]))
 

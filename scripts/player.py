@@ -13,6 +13,7 @@ class Player(E.Entity):
         self.grounded = False
         
         self.on_wall = False
+        self.wall_jumping = False
         self.jump_direction = 1
         
         self.can_dash = True
@@ -32,6 +33,11 @@ class Player(E.Entity):
         attack_f_count = 11
         
         self.air_time = 0
+        
+        self.keys = 100
+        
+        self.on_l_ramp = False
+        self.on_r_ramp = False
         
         f_anim = E.Animation()
         f_anim.load_anim(self.gm.assets.animations["fire"]["idle"], "idle", [idle_f_count] * 4)
@@ -63,7 +69,6 @@ class Player(E.Entity):
         self.jump_frame = "jump1"
         self.fall_anim = False
     
-    
     def draw(self, surf, scroll=[0, 0]):
         
         mod_x = 24
@@ -73,7 +78,7 @@ class Player(E.Entity):
             self.state = "idle"
         if self.dashing:
             self.state = "dash"
-        elif not self.dashing and self.grounded and self.fall_anim == False: 
+        elif self.dashing == False and self.grounded and self.fall_anim == False: 
             if self.movement[0] == 0:
                 self.state = "idle"
             if self.movement[0] != 0:
@@ -85,9 +90,9 @@ class Player(E.Entity):
             if self.movement[0] != 0:
                 self.state = "run"
         
-        if self.velocity[0] < -3:
+        if self.velocity[0] < -1:
             self.flip = True
-        if self.velocity[0] > 3:
+        if self.velocity[0] > 1:
             self.flip = False
         
         self.jump_frame = ""
@@ -96,15 +101,39 @@ class Player(E.Entity):
             self.state = "jump"
             self.animation.frame_count = 5
         
+        if self.wall_jumping and self.on_wall == False:
+            self.jump_frame = "jump1"
+            self.state = "jump"
+            self.animation.frame_count = 5
+            
         if self.state in ["idle", "run", "wall_slide"] and self.grounded == False and self.on_wall == False:
-            if self.velocity[1] >= 6:
+            if self.air_time >= 30 and self.state == "run":
+                self.animation.frame_count = 13
+                self.state = "jump"
+            if self.air_time >= 5 and self.state == "idle":
+                self.animation.frame_count = 13
+                self.state = "jump"
+            if self.air_time >= 30 and self.state == "wall_slide":
                 self.animation.frame_count = 13
                 self.state = "jump"
         
         if self.state == "dash" and self.grounded == False and self.on_wall == False:
-            if self.velocity[1] >= 1:
+            if self.air_time >= 8:
                 self.animation.frame_count = 13
                 self.state = "jump"
+        
+        if self.state == "dash" and self.grounded and self.on_r_ramp:
+            if self.movement[0] == 0:
+                self.state = "idle"
+            if self.movement[0] != 0:
+                self.state = "run"
+        
+        if self.state == "dash" and self.grounded and self.fall_anim:
+            self.fall_anim = False
+            if self.movement[0] == 0:
+                self.state = "idle"
+            if self.movement[0] != 0:
+                self.state = "run"
             
         loop = None
         if self.fall_anim and not self.grounded:
@@ -120,6 +149,7 @@ class Player(E.Entity):
         self.image, f = self.animation.animate(self.state, True, True, set_frame=self.jump_frame, loop_between=loop)
         
         if self.state == "jump" and self.animation.frame_count >= len(self.animation.frames["jump"])-1:
+            #print("Yolo")
             self.fall_anim = False
             self.state = "idle"
         
@@ -198,11 +228,11 @@ class Player(E.Entity):
         
         # Wall sliding
         if self.on_wall == True:
-            if self.velocity[1] > 0.6:
-                self.velocity[1] = 0.6
+            if self.velocity[1] > 0.3:
+                self.velocity[1] = 0.3
         
         #Dashing
-        if self.grounded:
+        if self.grounded or self.velocity[0] < -1 or self.velocity[0] > 1:
             if self.flip:
                 self.dash_direction = -1
             if not self.flip:
@@ -218,8 +248,14 @@ class Player(E.Entity):
         else:
             self.on_platform = False
         
+        if not self.grounded:
+            self.air_time += 1
+        
         self.collisions = self.physics_obj.movement(movement, colliders["tiles"], colliders["l_ramps"], colliders["r_ramps"])
         self.rect.center = self.physics_obj.rect.center
+        
+        self.on_l_ramp = len(E.collision_test(self.rect, colliders["l_ramps"])) > 0
+        self.on_r_ramp = len(E.collision_test(self.rect, colliders["r_ramps"])) > 0
 
         self.on_wall = False
         
@@ -231,27 +267,33 @@ class Player(E.Entity):
                     self.animation.frame_count = 32
                     #self.fall_anim = False
             self.grounded = True
+            self.air_time = 0
         else:
             self.grounded = False
         
         if self.collisions["top"]:
             self.velocity[1] = 1
         
-        if self.collisions["right"] and self.grounded == False:
+        if self.collisions["right"] and self.grounded == False and self.dashing == False:
             self.on_wall = True
             self.jump_direction = -1
             self.flip = True
+            self.state = "wall_slide"
         
-        if self.collisions["left"] and self.grounded == False:
+        if self.collisions["left"] and self.grounded == False and self.dashing == False:
             self.on_wall = True
             self.jump_direction = 1
             self.flip = False
+            self.state = "wall_slide"
         
         # Cap the velocity in the x direction
         if self.velocity[0] > 0:
             self.velocity[0] = max(self.velocity[0] - 0.2, 0)
         if self.velocity[0] < 0:
             self.velocity[0] = min(self.velocity[0] + 0.2, 0)
+        
+        if self.velocity[0] == 0:
+            self.wall_jumping = False
     
     def update(self):
         self.dash_timer.update()

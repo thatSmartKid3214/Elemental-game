@@ -39,7 +39,7 @@ class Game_Manager:
         self.doors = []
         
         self.world = World(self) 
-        count = 15
+        count = 10
         self.world.generate(count)    
         
         for i in range(self.world.max_retries):
@@ -86,6 +86,12 @@ class Game_Manager:
                         if not self.current_door.locked:
                             self.current_door.closed = not self.current_door.closed
                             self.current_door.flip = self.player.flip
+                        else:
+                            if self.player.keys > 0:
+                                self.current_door.locked = False
+                                self.current_door.closed = not self.current_door.closed
+                                self.current_door.flip = self.player.flip
+                                self.player.keys -= 1
                                    
                 if event.key == pygame.K_a:
                     self.player.left = True

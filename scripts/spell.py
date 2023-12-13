@@ -36,7 +36,7 @@ class Spellcast:
         self.flip_x = False
         self.flip_y = False
         self.angle = False
-        self.active = True
+        self.active = self.spell.cast_cooldown.timed_out()
     
     def cast(self, pos, vel, angle=0):
         if self.spell.type in ["fire", "water", "lightning"] and self.spell.name == "attack":
@@ -91,6 +91,9 @@ class Spellcast:
 
     def update(self):
         if self.active:
+            if self.spell.duration.timed_out():
+                self.spell.cast_cooldown.set()
+            
             if self.spell.type in ["fire", "water", "lightning"] and self.spell.name ==  "attack":
                 self.colliders[0][0].x += self.colliders[0][1][0]
                 self.colliders[0][0].y += self.colliders[0][1][1]
@@ -117,7 +120,6 @@ class Spellcast:
                         self.active = False
         
         self.spell.duration.update()
-        
 
 
 class SpellManager:
@@ -163,6 +165,10 @@ class SpellManager:
                 self.spells.append(spell) 
     
     def update(self):
+        for mode in self.gm.player.spells:
+            for sp in self.gm.player.spells[mode]:
+                self.gm.player.spells[mode][sp].cast_cooldown.update()
+        
         for i, spell in sorted(enumerate(self.spells), reverse=True):
             spell.update()
             spell.draw(self.gm.game.display, self.gm.camera.scroll)

@@ -74,11 +74,11 @@ class Player(E.Entity):
         s2 = Spell("water", "attack", "Shoot a small fireball", 1, 10, 0.1, 5)
         s3 = Spell("lightning", "attack", "Shoot a small fireball", 1, 10, 0.1, 5)
         
-        test_spell = Spell("fire", "flame_thrower", "Shoot a flame slash", 1, 20, 4, 3)
+        self.test_spell = Spell("fire", "flame_thrower", "Shoot a flame slash", 1, 20, 4, 3)
         test_spell2 = Spell("fire", "flame_slash", "Shoot a flame slash", 1, 20, 4, 5)
         test_spell3 = Spell("fire", "fireball", "Shoot a flame slash", 1, 20, 4, 5)
         
-        self.spells = {"fire":{"default": s, pygame.K_n: test_spell, pygame.K_m: test_spell2, pygame.K_y: test_spell3}, "water":{"default":s2}, "lightning":{"default":s3}}
+        self.spells = {"fire":{"default": s, pygame.K_n: self.test_spell, pygame.K_m: test_spell2, pygame.K_y: test_spell3}, "water":{"default":s2}, "lightning":{"default":s3}}
         
         self.default_spell = self.spells[self.mode]["default"]
     
@@ -311,6 +311,7 @@ class Player(E.Entity):
             self.wall_jumping = False
     
     def update(self):
+        self.test_spell.cast_cooldown.update()
         self.dash_timer.update()
         self.dash_cooldown.update()
 

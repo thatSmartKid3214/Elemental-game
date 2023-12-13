@@ -230,6 +230,8 @@ class Game_Manager:
             if self.player.rect.bottom <= p.y:        
                 self.colliders["tiles"].append(p)
         
+        self.spm.update()
+        
         self.player.move(self.colliders)
         self.player.update()
         
@@ -249,7 +251,7 @@ class Game_Manager:
         self.player.draw(self.game.display, scroll)
         self.manage_events()
         
-        self.spm.update()
+        self.spm.draw()
                 
         for c_id in self.colliders:
             self.colliders[c_id] = []

@@ -16,7 +16,7 @@ class Assets:
         self.music = {}
         self.animations = {"fire":{}, "water":{}, "lightning":{}}
         self.spells = {"fire":{"attack":[[3], []], "fireball":[[5], []], "flame_slash":[[1], []], "flame_thrower":[[5], []]}, 
-                       "water":{"attack":[[3], []]}, 
+                       "water":{"attack":[[3], []], "drown":[[4], []], "ice_spike": [[1], []], "ice_wall": [[4], []], "splash": [[2], []], "water_arrow": [[5], []]}, 
                        "lightning":{"attack":[[3], []]}
                        }
         
@@ -270,6 +270,17 @@ class Assets:
                     num = 5
                 if spell == "flame_thrower":
                     num = 14
+                if spell == "drown":
+                    num = 10
+                if spell == "ice_spike":
+                    num = 1
+                if spell == "ice_wall":
+                    num = 12
+                if spell == "splash":
+                    num = 9
+                if spell == "water_arrow":
+                    num = 11
+                    
                 
                 for i in range(num):
                     img = f"{spell}{i+1}.png"
@@ -277,12 +288,12 @@ class Assets:
                     image = E.ImageManager.load(f"data/images/spells/{spell_type}/{img}", (0, 0, 0))
                     if spell == "fireball":
                         image = pygame.transform.scale(image, (image.get_width()*2, image.get_height()*2))
+                    if spell == "drown":
+                        image = pygame.transform.scale(image, (image.get_width()*2, image.get_height()*2))
+                        image.set_alpha(180)
                     self.spells[spell_type][spell][1].append(image)
             
                 self.spells[spell_type][spell][0] = self.spells[spell_type][spell][0] * len(self.spells[spell_type][spell][1])
-            
-        
-        #print(self.spells)
 
     def modify_image(self, img_id, scale=0, colorkey=(0, 0, 0)):
         if scale != 0:

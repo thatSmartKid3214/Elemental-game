@@ -1,4 +1,0 @@
-#Today's tasks
--Optimizing rendering
-
--Make the final room designs from the final game

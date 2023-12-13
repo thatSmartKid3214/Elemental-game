@@ -1,5 +1,6 @@
 import pygame
 import scripts.Engine as E
+from scripts.spell import Spell, Spellcast
 import math
 
 class Player(E.Entity):
@@ -68,6 +69,18 @@ class Player(E.Entity):
         self.flip = False
         self.jump_frame = "jump1"
         self.fall_anim = False
+        
+        s = Spell("fire", "attack", "Shoot a small fireball", 1, 10, 0.1, 5)
+        s2 = Spell("water", "attack", "Shoot a small fireball", 1, 10, 0.1, 5)
+        s3 = Spell("lightning", "attack", "Shoot a small fireball", 1, 10, 0.1, 5)
+        
+        test_spell = Spell("fire", "flame_thrower", "Shoot a flame slash", 1, 20, 4, 3)
+        test_spell2 = Spell("fire", "flame_slash", "Shoot a flame slash", 1, 20, 4, 5)
+        test_spell3 = Spell("fire", "fireball", "Shoot a flame slash", 1, 20, 4, 5)
+        
+        self.spells = {"fire":{"default": s, pygame.K_n: test_spell, pygame.K_m: test_spell2, pygame.K_y: test_spell3}, "water":{"default":s2}, "lightning":{"default":s3}}
+        
+        self.default_spell = self.spells[self.mode]["default"]
     
     def draw(self, surf, scroll=[0, 0]):
         
@@ -282,13 +295,11 @@ class Player(E.Entity):
             self.on_wall = True
             self.jump_direction = -1
             self.flip = True
-            self.state = "wall_slide"
         
         if self.collisions["left"] and self.grounded == False and self.dashing == False:
             self.on_wall = True
             self.jump_direction = 1
             self.flip = False
-            self.state = "wall_slide"
         
         # Cap the velocity in the x direction
         if self.velocity[0] > 0:

@@ -8,7 +8,7 @@ class Trapdoor:
         self.images = images
         self.img = images[0]
         self.rect = self.img.get_rect(topleft=pos)
-        self.open_timer = E.Timer(0.2, self.open)
+        self.open_timer = E.Timer(0.15, self.open)
         self.close_timer = E.Timer(1.5, self.close)
         self.opened = False
     

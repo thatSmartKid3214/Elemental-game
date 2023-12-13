@@ -2,12 +2,15 @@ import pygame
 import scripts.Engine as E
 from scripts.player import Player
 from scripts.world import World
+from scripts.particle import Particle
+from scripts.spell import Spell, Spellcast, SpellManager
 import random
 import json
 from copy import deepcopy
 
 class Game_Manager:
     def __init__(self, game):
+        self.TILESIZE = 16
         self.game = game
         self.assets = self.game.assets
         self.state = "Play"
@@ -16,7 +19,7 @@ class Game_Manager:
         self.camera = E.Camera()
         self.level = {"tiles":[],  "decor":[], "walls":[]}
         self.render_order = ["walls", "decor", "traps", "tiles"]
-        self.TILESIZE = 16
+        self.spm = SpellManager(self)
         
         self.test_rects = []
         self.test_entries1 = []
@@ -38,8 +41,10 @@ class Game_Manager:
         self.animated_tiles = []
         self.doors = []
         
+        self.particles = []
+        
         self.world = World(self) 
-        count = 10
+        count = 20
         self.world.generate(count)    
         
         for i in range(self.world.max_retries):
@@ -60,9 +65,13 @@ class Game_Manager:
         
         self.player.set_pos(pos[0], pos[1])
         self.camera.update(self.player.rect, self.game.display, 1)
+        
+        self.spells = []
             
     def manage_events(self):
         for event in pygame.event.get():
+            self.spm.handle_player_casting(event)
+            
             if event.type == pygame.QUIT:
                 self.game.close()
                 
@@ -74,12 +83,15 @@ class Game_Manager:
                 if event.key == pygame.K_1:
                     self.player.mode = "fire"
                     self.player.animation = self.player.animations[self.player.mode]
+                    self.player.default_spell = self.player.spells[self.player.mode]["default"]
                 if event.key == pygame.K_2:
                     self.player.mode = "water"
                     self.player.animation = self.player.animations[self.player.mode]
+                    self.player.default_spell = self.player.spells[self.player.mode]["default"]
                 if event.key == pygame.K_3:
                     self.player.mode = "lightning"
                     self.player.animation = self.player.animations[self.player.mode]
+                    self.player.default_spell = self.player.spells[self.player.mode]["default"]
                 
                 if event.key == pygame.K_e:
                     if self.current_door != None:
@@ -207,6 +219,12 @@ class Game_Manager:
                             if tile[0] == 91:
                                 self.colliders["r_ramps"].append(pygame.Rect(tile[1][0]*self.TILESIZE, tile[1][1]*self.TILESIZE, self.TILESIZE, self.TILESIZE))
         
+        for i, part in sorted(enumerate(self.particles), reverse=True):
+            if part.alive:
+                part.update()
+                part.draw(self.game.display, scroll)
+            else:
+                self.particles.pop(i)
         
         for p in self.colliders["platforms"]:
             if self.player.rect.bottom <= p.y:        
@@ -231,6 +249,8 @@ class Game_Manager:
         self.player.draw(self.game.display, scroll)
         self.manage_events()
         
+        self.spm.update()
+                
         for c_id in self.colliders:
             self.colliders[c_id] = []
         self.current_door = None

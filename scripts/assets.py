@@ -15,6 +15,11 @@ class Assets:
         self.sound_effects = {}
         self.music = {}
         self.animations = {"fire":{}, "water":{}, "lightning":{}}
+        self.spells = {"fire":{"attack":[[3], []], "fireball":[[5], []], "flame_slash":[[1], []], "flame_thrower":[[5], []]}, 
+                       "water":{"attack":[[3], []]}, 
+                       "lightning":{"attack":[[3], []]}
+                       }
+        
         
         self.rooms = {}
         self.corridors = {}
@@ -30,6 +35,7 @@ class Assets:
         self.load_rooms()
         self.load_tileset()
         self.load_animations()
+        self.load_spells()
         
     def load_rooms(self):
         path = "data/rooms"
@@ -248,6 +254,35 @@ class Assets:
             tile = load_data["tiles"][tile_id]
             img = E.ImageManager.get_image(tileset, tile[0], tile[1], tile[2], tile[3], 1)
             self.tileset[tile_id] = img 
+    
+    def load_spells(self):
+        # Fire spells
+        img_list = {"fire": os.listdir("data/images/spells/fire"), "water": os.listdir("data/images/spells/water"), "lightning": os.listdir("data/images/spells/lightning")}
+        
+        for spell_type in self.spells:
+            for spell in self.spells[spell_type]:
+                num = 6
+                if spell == "attack":
+                    num = 6
+                if spell == "fireball":
+                    num = 3
+                if spell == "flame_slash":
+                    num = 5
+                if spell == "flame_thrower":
+                    num = 14
+                
+                for i in range(num):
+                    img = f"{spell}{i+1}.png"
+                        
+                    image = E.ImageManager.load(f"data/images/spells/{spell_type}/{img}", (0, 0, 0))
+                    if spell == "fireball":
+                        image = pygame.transform.scale(image, (image.get_width()*2, image.get_height()*2))
+                    self.spells[spell_type][spell][1].append(image)
+            
+                self.spells[spell_type][spell][0] = self.spells[spell_type][spell][0] * len(self.spells[spell_type][spell][1])
+            
+        
+        #print(self.spells)
 
     def modify_image(self, img_id, scale=0, colorkey=(0, 0, 0)):
         if scale != 0:

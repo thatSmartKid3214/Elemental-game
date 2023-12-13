@@ -230,6 +230,9 @@ class Timer:
     def set_var(self):
         self.var = False
     
+    def set_callback(self, callback):
+        self.callback = callback
+    
     def set(self):
         self.set_time()
         self.set_var()
@@ -479,42 +482,6 @@ class Text:
 
         width += (len(text)-1)*self.spacing
         return [width, height]
-
-class Particle:
-    def __init__(self, pos: list, vel: list, size: int, color: list or tuple, acceleration: int =[0, 0], gravity=0, deterioration=0.1, shape="square"):
-        self.pos = pos
-        self.vel = vel
-        self.size = size
-        self.color = color
-        self.shape = shape
-        self.acceleration = acceleration
-        self.gravity = gravity
-        self.deterioration = deterioration
-        
-    def update(self, surf, tiles=[]):
-        self.pos[0] += self.vel[0]
-        self.pos[1] += self.vel[1]
-        self.size -= self.deterioration
-        
-        self.vel[1] += self.gravity
-        
-        if self.vel[0] > 0:
-            self.vel[0] = max(0, self.vel[0]-self.acceleration[0])
-        if self.vel[0] < 0:
-            self.vel[0] = min(0, self.vel[0]+self.acceleration[0])
-        
-        if self.vel[1] > 0:
-            self.vel[1] = max(0, self.vel[1]-self.acceleration[1])
-        if self.vel[1] < 0:
-            self.vel[1] = min(0, self.vel[1]+self.acceleration[1])
-        
-        if self.shape == "square":
-            pygame.draw.rect(surf, self.color, (self.pos[0], self.pos[1], self.size, self.size))
-        if self.shape == "circle":
-            pygame.draw.circle(surf, self.color, (self.pos[0], self.pos[1]), self.size)
-        if self.shape == "triangle":
-            points = [[self.pos[0], self.pos[1]-self.size], [self.pos[0]-self.size, self.pos[1]+self.size], [self.pos[0]+self.size, self.pos[1]+self.size]]
-            pygame.draw.polygon(surf, self.color, points)
 
 class Animation:
     def __init__(self):
